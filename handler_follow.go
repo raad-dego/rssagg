@@ -23,7 +23,7 @@ func (cfg *apiConfig) handlerFeedFollowsGet(w http.ResponseWriter, r *http.Reque
 
 func (cfg *apiConfig) handlerFeedFollowCreate(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
-		FeedID uuid.UUID
+		FeedID uuid.UUID `json:"feed_id"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -43,9 +43,6 @@ func (cfg *apiConfig) handlerFeedFollowCreate(w http.ResponseWriter, r *http.Req
 
 	feedFollow, err := cfg.DB.CreateFeedFollow(r.Context(), FeedFollowParams)
 	if err != nil {
-		fmt.Printf("Couldn't create feed follow: %s", err)
-		fmt.Println(databaseFeedFollowToFeedFollow(feedFollow))
-		fmt.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create feed follow")
 		return
 	}
