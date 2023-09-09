@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -39,8 +38,6 @@ func (cfg *apiConfig) handlerFeedFollowCreate(w http.ResponseWriter, r *http.Req
 		UserID:    user.ID,
 		FeedID:    params.FeedID,
 	}
-	fmt.Print(FeedFollowParams)
-
 	feedFollow, err := cfg.DB.CreateFeedFollow(r.Context(), FeedFollowParams)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create feed follow")

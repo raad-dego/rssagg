@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -20,12 +21,12 @@ func main() {
 	godotenv.Load()
 
 	dbURL := os.Getenv("DBURL")
-	db, err := sql.Open("postgres", dbURL)
+	conn, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatal("dbURL must be set.")
 
 	}
-	dbQueries := database.New(db)
+	db := database.New(conn)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -33,8 +34,10 @@ func main() {
 	}
 
 	apiCfg := apiConfig{
-		DB: dbQueries,
+		DB: db,
 	}
+
+	go startScrapping(db, 10, time.Minute)
 
 	router := chi.NewRouter()
 
@@ -48,6 +51,8 @@ func main() {
 	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerFeedFollowsGet))
 	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerFeedFollowCreate))
 	v1Router.Delete("/feed_follows/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerFeedFollowDelete))
+
+	v1Router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
 
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/err", handlerErr)
